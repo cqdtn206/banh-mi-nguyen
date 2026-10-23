@@ -73,33 +73,50 @@
     const MENU_API_URL = https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec';
     let selectedItems = [];
 
-    async function loadMenu() {
-        try {
-            let response = await fetch(MENU_API_URL);
-            let menuItems = await response.json();
-            
-            let container = document.getElementById('menu-container');
-            container.innerHTML = '';
+   async function loadMenu() {
+    const container = document.getElementById('menu-container');
+    const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec';
 
-            let activeItems = menuItems.filter(item => String(item.status).trim().toUpperCase() === 'ON');
+    try {
+        // Thêm redirect: 'follow' để xử lý chuyển hướng kết nối từ Google Apps Script
+        let response = await fetch(MENU_API_URL, {
+            method: 'GET',
+            redirect: 'follow'
+        });
 
-            if (activeItems.length === 0) {
-                container.innerHTML = '<p>Hôm nay quán tạm nghỉ hoặc chưa có món.</p>';
-                return;
-            }
-
-            activeItems.forEach(item => {
-                container.innerHTML += `
-                    <div class="item">
-                        <span>${item.name} (${Number(item.price).toLocaleString()}đ)</span>
-                        <button type="button" onclick="selectItem('${item.name}', ${item.price})" style="width: auto; padding: 5px 10px;">Chọn</button>
-                    </div>
-                `;
-            });
-        } catch (e) {
-            document.getElementById('menu-container').innerHTML = '<p>Không thể tải thực đơn từ hệ thống!</p>';
+        if (!response.ok) {
+            throw new Error('Lỗi mạng hoặc không thể truy cập API');
         }
+
+        let menuItems = await response.json();
+        container.innerHTML = '';
+
+        // Lọc danh sách món có trạng thái ON
+        let activeItems = menuItems.filter(item => String(item.status).trim().toUpperCase() === 'ON');
+
+        if (activeItems.length === 0) {
+            container.innerHTML = '<p style="color: #666; font-style: italic;">Hôm nay quán tạm nghỉ hoặc chưa bật danh mục món.</p>';
+            return;
+        }
+
+        activeItems.forEach(item => {
+            container.innerHTML += `
+                <div class="item">
+                    <span><b>${item.name}</b> - <span style="color: #ff4500;">${Number(item.price).toLocaleString()}đ</span></span>
+                    <button type="button" onclick="selectItem('${item.name}', ${item.price})" style="width: auto; padding: 6px 12px; font-size: 13px;">Chọn</button>
+                </div>
+            `;
+        });
+    } catch (e) {
+        console.error('Lỗi load menu:', e);
+        container.innerHTML = `
+            <div style="color: red; padding: 10px; border: 1px dashed red; border-radius: 5px; font-size: 13px;">
+                ⚠️ <b>Chưa tải được thực đơn!</b><br>
+                Anh hãy kiểm tra lại quyền <b>"Anyone"</b> trên Google Apps Script hoặc bấm F12 chọn tab Console để xem chi tiết.
+            </div>
+        `;
     }
+}
 
     loadMenu();
 
