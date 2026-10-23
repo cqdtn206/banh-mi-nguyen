@@ -17,6 +17,17 @@
         .logo-container { text-align: center; margin-bottom: 15px; }
         .logo-container img { max-width: 130px; height: auto; border-radius: 50%; border: 3px solid #ff4500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
+        /* Link Alo ship có thể bấm gọi */
+        .alo-ship-link {
+            color: #ff4500;
+            font-weight: bold;
+            font-size: 13px;
+            margin: 3px 0;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .alo-ship-link:hover { text-decoration: underline; }
+
         /* Giao diện danh mục và món ăn */
         .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
@@ -61,10 +72,11 @@
         
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
         
+        /* Nút xác nhận đặt hàng */
         .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
         
-        /* Nút gọi điện thoại trực tiếp màu xanh */
+        /* Nút gọi điện thoại trực tiếp màu xanh đặt bên dưới nút đặt hàng */
         .btn-call {
             background: #28a745;
             color: white;
@@ -80,7 +92,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-top: 12px;
             box-sizing: border-box;
             box-shadow: 0 3px 6px rgba(40,167,69,0.2);
         }
@@ -117,7 +129,9 @@
         <img src="logo.png" alt="Logo Tiệm Bánh Mì Nguyên" onerror="this.src='https://via.placeholder.com/130?text=Logo+Nguyen'">
         <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
         <p style="font-size: 12px; color: #555; margin: 3px 0;">📍 SN 372, Đường Quang Trung, Thái Nguyên</p>
-        <p style="font-size: 13px; color: #ff4500; font-weight: bold; margin: 3px 0;">📞 Alo ship: 0973.818.199</p>
+        
+        <!-- Alo ship bấm vào gọi điện ngay -->
+        <a href="tel:0973818199" class="alo-ship-link">📞 Alo ship: 0973.818.199</a>
     </div>
     
     <!-- Danh sách Menu phân theo danh mục -->
@@ -143,13 +157,13 @@
     <label style="font-size: 13px; font-weight: bold;">Ghi chú:</label>
     <textarea id="custNote" maxlength="1000" rows="2" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
-    <!-- Nút gọi điện thoại trực tiếp với cửa hàng -->
+    <!-- Nút xác nhận đặt hàng -->
+    <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+
+    <!-- Nút gọi điện thoại trực tiếp nằm ngay bên dưới nút Đặt hàng -->
     <a href="tel:0973818199" class="btn-call">
         📞 Liên hệ trực tiếp với cửa hàng: 0973.818.199
     </a>
-
-    <!-- Nút xác nhận đặt hàng -->
-    <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
     
     <!-- Nút lưu Shortcut ra màn hình chính -->
     <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính Để Dùng Lần Sau</button>
