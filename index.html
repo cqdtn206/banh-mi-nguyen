@@ -17,40 +17,43 @@
         .logo-container { text-align: center; margin-bottom: 15px; }
         .logo-container img { max-width: 130px; height: auto; border-radius: 50%; border: 3px solid #ff4500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* Giao diện danh mục và món ăn dạng lưới */
+        /* Giao diện danh mục và món ăn */
         .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
         
-        /* Thẻ món ăn sinh động tích hợp hình ảnh */
+        /* Thẻ món ăn tích hợp ảnh sinh động */
         .food-card {
             background: #fff;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px;
             text-align: left;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
+            align-items: center;
+            gap: 10px;
         }
         .food-card:hover {
             border-color: #ff4500;
             background: #fff9f5;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255,69,0,0.15);
+            box-shadow: 0 3px 8px rgba(255,69,0,0.15);
         }
         .food-img {
-            width: 100%;
-            height: 90px;
-            object-fit: cover;
+            width: 50px;
+            height: 50px;
             border-radius: 6px;
-            margin-bottom: 8px;
-            background: #f0f0f0;
+            object-fit: cover;
+            border: 1px solid #eee;
+            flex-shrink: 0;
         }
-        .food-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .food-name { font-weight: bold; font-size: 13px; margin-bottom: 4px; color: #222; line-height: 1.3; }
+        .food-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .food-name { font-weight: bold; font-size: 13px; margin-bottom: 4px; color: #222; line-height: 1.2; }
         .food-price { color: #ff4500; font-size: 13px; font-weight: bold; }
 
         /* Giỏ hàng */
@@ -59,11 +62,9 @@
         
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
         
-        /* Nút xác nhận đặt hàng */
         .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
         
-        /* Nút tạo Shortcut màn hình chính */
         .btn-shortcut {
             background: #fff0eb;
             color: #ff4500;
@@ -79,10 +80,9 @@
             text-align: center;
         }
 
-        /* Nút xóa trong giỏ hàng */
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: auto !important; }
         
-        /* Popup xác nhận & Hướng dẫn Shortcut */
+        /* Popup xác nhận & Shortcut */
         #confirmModal, #shortcutModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 20% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
@@ -122,5 +122,239 @@
     <label style="font-size: 13px; font-weight: bold;">Ghi chú:</label>
     <textarea id="custNote" maxlength="1000" rows="2" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
-    <!-- Nút xác nhận đặt hàng -->
     <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+    <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính Để Dùng Lần Sau</button>
+</div>
+
+<!-- POPUP XÁC NHẬN ĐẶT HÀNG -->
+<div id="confirmModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color: #ff4500;">📋 Xác nhận đơn hàng</h3>
+        <p style="font-size: 13px; color: #666;">Vui lòng kiểm tra lại các món đã chọn:</p>
+        <div id="popup-cart-summary" style="max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 6px; font-size: 13px; border: 1px solid #eee;"></div>
+        <p id="popup-total" style="font-weight: bold; margin-top: 12px; color: #ff4500; font-size: 15px;"></p>
+        
+        <div class="modal-buttons">
+            <button type="button" onclick="cancelOrder()" style="background: #999; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer;">Đặt lại</button>
+            <button type="button" onclick="submitOrderFinal()" style="background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer;">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP HƯỚNG DẪN SHORTCUT -->
+<div id="shortcutModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color: #ff4500; font-size: 16px;">📲 Thêm vào màn hình chính</h3>
+        <div id="shortcutGuideText" style="font-size: 13px; line-height: 1.5; color: #444;"></div>
+        <button type="button" onclick="closeShortcutGuide()" style="background: #ff4500; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">Đã Hiểu</button>
+    </div>
+</div>
+
+<script>
+    const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec';
+    let selectedItems = [];
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    function openShortcutGuide() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt = null;
+            });
+            return;
+        }
+
+        let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        let guideHtml = '';
+
+        if (isIOS) {
+            guideHtml = `
+                <p><b>Dành cho iPhone / iPad (Safari):</b></p>
+                <ol style="padding-left: 20px; margin: 5px 0;">
+                    <li>Bấm vào biểu tượng <b>Chia sẻ</b> (hình vuông có mũi tên chỉ lên ➔ ⎋) ở góc dưới màn hình.</li>
+                    <li>Cuộn xuống chọn <b>"Thêm vào Màn hình chính"</b> (Add to Home Screen).</li>
+                    <li>Bấm <b>Thêm</b> ở góc trên bên phải.</li>
+                </ol>
+            `;
+        } else {
+            guideHtml = `
+                <p><b>Dành cho Android (Chrome / Trình duyệt):</b></p>
+                <ol style="padding-left: 20px; margin: 5px 0;">
+                    <li>Bấm vào dấu <b>3 chấm ⋮</b> ở góc trên bên phải trình duyệt.</li>
+                    <li>Chọn <b>"Thêm vào Màn hình chính"</b> (hoặc <i>Cài đặt ứng dụng</i>).</li>
+                    <li>Bấm <b>Thêm</b> để hoàn tất.</li>
+                </ol>
+            `;
+        }
+
+        document.getElementById('shortcutGuideText').innerHTML = guideHtml;
+        document.getElementById('shortcutModal').style.display = 'block';
+    }
+
+    function closeShortcutGuide() {
+        document.getElementById('shortcutModal').style.display = 'none';
+    }
+
+    async function loadMenu() {
+        const container = document.getElementById('menu-container');
+        try {
+            let response = await fetch(MENU_API_URL, { method: 'GET', redirect: 'follow' });
+            let textData = await response.text();
+            let menuItems = JSON.parse(textData);
+
+            container.innerHTML = '';
+            let activeItems = menuItems.filter(item => item.status && String(item.status).trim().toUpperCase() === 'ON');
+
+            if (activeItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">Hôm nay quán tạm nghỉ hoặc chưa mở món.</p>';
+                return;
+            }
+
+            let categories = {};
+            activeItems.forEach(item => {
+                let cat = item.category ? String(item.category).trim() : 'Món Khác';
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push(item);
+            });
+
+            for (let cat in categories) {
+                container.innerHTML += `<div class="category-title">📂 ${cat}</div>`;
+                let gridHtml = '<div class="menu-grid">';
+                
+                categories[cat].forEach(item => {
+                    // Ảnh mặc định nếu trên Google Sheets không có link
+                    let imgUrl = item.image && String(item.image).trim().length > 5 
+                        ? item.image 
+                        : 'logo.png';
+
+                    gridHtml += `
+                        <div class="food-card" onclick="selectItem('${item.name}', ${item.price})">
+                            <img src="${imgUrl}" class="food-img" alt="${item.name}" onerror="this.src='logo.png'">
+                            <div class="food-info">
+                                <div class="food-name">${item.name}</div>
+                                <div class="food-price">${Number(item.price).toLocaleString()}đ</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                gridHtml += '</div>';
+                container.innerHTML += gridHtml;
+            }
+
+        } catch (e) {
+            console.error('Lỗi load menu:', e);
+            container.innerHTML = '<p style="text-align: center; color: red;">Không thể tải thực đơn từ hệ thống!</p>';
+        }
+    }
+
+    loadMenu();
+
+    function selectItem(name, price) {
+        let existing = selectedItems.find(i => i.name === name);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            selectedItems.push({ name: name, price: price, quantity: 1 });
+        }
+        updateCartUI();
+        validateForm();
+    }
+
+    function removeItem(index) {
+        selectedItems.splice(index, 1);
+        updateCartUI();
+        validateForm();
+    }
+
+    function updateCartUI() {
+        let cartList = document.getElementById('cart-list');
+        if (selectedItems.length === 0) {
+            cartList.innerHTML = 'Chưa chọn món nào';
+            return;
+        }
+        cartList.innerHTML = selectedItems.map((i, index) => `
+            <div class="cart-item">
+                <span><b>${i.name}</b> (x${i.quantity}) - <span style="color:#ff4500;">${(i.price * i.quantity).toLocaleString()}đ</span></span>
+                <button type="button" class="btn-delete" onclick="removeItem(${index})">Xóa</button>
+            </div>
+        `).join('');
+    }
+
+    function validateForm() {
+        let name = document.getElementById('custName').value.trim();
+        let phone = document.getElementById('custPhone').value.trim();
+        let btn = document.getElementById('btnSubmit');
+        
+        if (selectedItems.length > 0 && name.length > 0 && phone.length >= 9) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = true;
+        }
+    }
+
+    function showConfirmPopup(event) {
+        if (event) event.preventDefault();
+
+        document.getElementById('popup-cart-summary').innerHTML = selectedItems.map(i => `• <b>${i.name}</b> (x${i.quantity}): ${(i.price * i.quantity).toLocaleString()}đ`).join('<br>');
+        let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        document.getElementById('popup-total').innerText = `Tổng cộng: ${totalMoney.toLocaleString()}đ`;
+
+        document.getElementById('confirmModal').style.display = 'block';
+    }
+
+    function cancelOrder() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    async function submitOrderFinal() {
+        document.getElementById('confirmModal').style.display = 'none';
+
+        let customerName = document.getElementById('custName').value.trim();
+        let phone = document.getElementById('custPhone').value.trim();
+        let note = document.getElementById('custNote').value.trim();
+
+        let itemsText = selectedItems.map(i => `- ${i.name} (x${i.quantity}): ${i.price * i.quantity}đ`).join('\n');
+        let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+        let message = `🚨 *CÓ ĐƠN HÀNG ONLINE MỚI!* 🥖\n\n` +
+                      `👤 *Khách hàng:* ${customerName}\n` +
+                      `📞 *Số điện thoại:* ${phone}\n` +
+                      `📝 *Ghi chú:* ${note || 'Không có'}\n\n` +
+                      `🛒 *Chi tiết món:*\n${itemsText}\n\n` +
+                      `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
+
+        const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g'; 
+        const CHAT_ID = '-5368737820';    
+
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=Markdown&text=${encodeURIComponent(message)}`;
+
+        try {
+            await fetch(url, { method: 'GET' });
+            alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
+            resetForm();
+        } catch (e) {
+            let img = new Image();
+            img.src = url;
+            alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
+            resetForm();
+        }
+    }
+
+    function resetForm() {
+        selectedItems = [];
+        updateCartUI();
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custNote').value = '';
+        validateForm();
+    }
+</script>
+
+</body>
+</html>
