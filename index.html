@@ -16,20 +16,6 @@
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .logo-container { text-align: center; margin-bottom: 15px; }
         .logo-container img { max-width: 130px; height: auto; border-radius: 50%; border: 3px solid #ff4500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        /* Nút tạo Shortcut màn hình chính */
-        .btn-shortcut {
-            background: #fff0eb;
-            color: #ff4500;
-            border: 1px dashed #ff4500;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            display: inline-block;
-        }
 
         /* Giao diện danh mục và món ăn dạng lưới */
         .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
@@ -62,8 +48,27 @@
         
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
         
+        /* Nút xác nhận đặt hàng chính */
         .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        
+        /* Nút tạo Shortcut màn hình chính đặt bên dưới */
+        .btn-shortcut {
+            background: #fff0eb;
+            color: #ff4500;
+            border: 1px dashed #ff4500;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 12px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* Nút xóa trong giỏ hàng */
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: auto !important; }
         
         /* Popup xác nhận & Hướng dẫn Shortcut */
@@ -81,9 +86,6 @@
         <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
         <p style="font-size: 12px; color: #555; margin: 3px 0;">📍 SN 372, Đường Quang Trung, Thái Nguyên</p>
         <p style="font-size: 13px; color: #ff4500; font-weight: bold; margin: 3px 0;">📞 Alo ship: 0973.818.199</p>
-        
-        <!-- Nút lưu Shortcut ra màn hình chính -->
-        <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính</button>
     </div>
     
     <!-- Danh sách Menu phân theo danh mục -->
@@ -109,7 +111,11 @@
     <label style="font-size: 13px; font-weight: bold;">Ghi chú:</label>
     <textarea id="custNote" maxlength="1000" rows="2" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
+    <!-- Nút xác nhận đặt hàng -->
     <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+    
+    <!-- Nút lưu Shortcut ra màn hình chính được đặt ngay bên dưới nút Đặt hàng -->
+    <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính Để Dùng Lần Sau</button>
 </div>
 
 <!-- POPUP XÁC NHẬN ĐẶT HÀNG -->
@@ -127,7 +133,7 @@
     </div>
 </div>
 
-<!-- POPUP HƯỚNG DẪN TẠO SHORTCUT CẬP NHẬT TRỰC QUAN -->
+<!-- POPUP HƯỚNG DẪN TẠO SHORTCUT -->
 <div id="shortcutModal">
     <div class="modal-content">
         <h3 style="margin-top:0; color: #ff4500; font-size: 16px;">📲 Thêm vào màn hình chính</h3>
@@ -141,7 +147,6 @@
     let selectedItems = [];
     let deferredPrompt;
 
-    // Bắt sự kiện cài đặt tự động trên Android
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
