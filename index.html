@@ -5,20 +5,53 @@
     <title>Tiệm Bánh Mì NGUYÊN - Đặt Món Online</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 15px; margin: 0; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo-container { text-align: center; margin-bottom: 15px; }
-        .logo-container img { max-width: 150px; height: auto; border-radius: 50%; border: 3px solid #ff4500; }
-        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #ddd; font-size: 14px; }
-        input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #ff4500; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; width: auto !important; min-width: unset;}
+        body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 15px; margin: 0; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .logo-container { text-align: center; margin-bottom: 20px; }
+        .logo-container img { max-width: 130px; height: auto; border-radius: 50%; border: 3px solid #ff4500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        /* CSS cho Popup xác nhận */
+        /* Giao diện danh mục và món ăn sinh động dạng lưới nút bấm */
+        .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        
+        /* Mỗi món là một nút bấm sinh động */
+        .food-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .food-card:hover {
+            border-color: #ff4500;
+            background: #fff9f5;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(255,69,0,0.15);
+        }
+        .food-name { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #222; }
+        .food-price { color: #ff4500; font-size: 13px; font-weight: bold; }
+
+        /* Giỏ hàng */
+        .cart-section { background: #fafafa; padding: 12px; border-radius: 8px; border: 1px solid #eee; margin-top: 20px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #ddd; font-size: 13px; }
+        
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        
+        /* Nút chính */
+        .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        
+        /* Nút xóa trong giỏ hàng */
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: auto !important; }
+        
+        /* Popup xác nhận */
         #confirmModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .modal-content { background-color: white; margin: 20% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
     </style>
 </head>
@@ -27,96 +60,106 @@
 <div class="container">
     <!-- Logo của quán -->
     <div class="logo-container">
-        <img src="logo.png" alt="Logo Tiệm Bánh Mì Nguyên" onerror="this.src='https://via.placeholder.com/150?text=Logo+Nguyen'">
+        <img src="logo.png" alt="Logo Tiệm Bánh Mì Nguyên" onerror="this.src='https://via.placeholder.com/130?text=Logo+Nguyen'">
         <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
-        <p style="font-size: 13px; color: #666;">SN 372, Đường Quang Trung, Thái Nguyên</p>
+        <p style="font-size: 12px; color: #666; margin: 2px 0;">SN 372, Đường Quang Trung, Thái Nguyên</p>
     </div>
     
+    <!-- Danh sách Menu phân theo danh mục -->
     <div id="menu-container">
-        <p>Đang tải thực đơn...</p>
+        <p style="text-align: center; color: #666;">Đang tải thực đơn...</p>
     </div>
 
-    <h3>🛒 Giỏ hàng của bạn:</h3>
-    <div id="cart-list" style="margin-bottom: 15px;">Chưa chọn món nào</div>
+    <!-- Giỏ hàng -->
+    <div class="cart-section">
+        <h3 style="margin-top: 0; font-size: 15px; color: #333;">🛒 Giỏ hàng của bạn:</h3>
+        <div id="cart-list" style="color: #666; font-style: italic; font-size: 13px;">Chưa chọn món nào</div>
+    </div>
 
-    <hr>
-    <h3>Thông tin liên hệ</h3>
-    <label>Tên khách hàng:</label>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    
+    <h3 style="font-size: 15px; margin-bottom: 10px;">Thông tin nhận hàng</h3>
+    <label style="font-size: 13px; font-weight: bold;">Tên khách hàng:</label>
     <input type="text" id="custName" placeholder="Nhập tên của bạn..." oninput="validateForm()">
 
-    <label>Số điện thoại (Bắt buộc):</label>
+    <label style="font-size: 13px; font-weight: bold;">Số điện thoại (Bắt buộc):</label>
     <input type="tel" id="custPhone" placeholder="Nhập số điện thoại..." oninput="validateForm()">
 
-    <label>Ghi chú (Tối đa 1000 ký tự):</label>
-    <textarea id="custNote" maxlength="1000" rows="3" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
+    <label style="font-size: 13px; font-weight: bold;">Ghi chú:</label>
+    <textarea id="custNote" maxlength="1000" rows="2" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
-    <button type="button" id="btnSubmit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+    <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
 </div>
 
 <!-- POPUP XÁC NHẬN ĐẶT HÀNG -->
 <div id="confirmModal">
     <div class="modal-content">
-        <h3>📋 Xác nhận đơn hàng</h3>
-        <p>Vui lòng kiểm tra lại các món đã chọn:</p>
-        <div id="popup-cart-summary" style="max-height: 150px; overflow-y: auto; background: #f1f1f1; padding: 10px; border-radius: 5px; font-size: 14px;"></div>
-        <p id="popup-total" style="font-weight: bold; margin-top: 10px; color: #ff4500;"></p>
+        <h3 style="margin-top:0; color: #ff4500;">📋 Xác nhận đơn hàng</h3>
+        <p style="font-size: 13px; color: #666;">Vui lòng kiểm tra lại các món đã chọn:</p>
+        <div id="popup-cart-summary" style="max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 6px; font-size: 13px; border: 1px solid #eee;"></div>
+        <p id="popup-total" style="font-weight: bold; margin-top: 12px; color: #ff4500; font-size: 15px;"></p>
         
         <div class="modal-buttons">
-            <button type="button" onclick="cancelOrder()" style="background: #999;">Đặt lại</button>
-            <button type="button" onclick="submitOrderFinal()" style="background: #28a745;">Đồng ý</button>
+            <button type="button" onclick="cancelOrder()" style="background: #999; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer;">Đặt lại</button>
+            <button type="button" onclick="submitOrderFinal()" style="background: #28a745; color: white; border: none; padding: 10px; flex: 1; border-radius: 6px; font-weight: bold; cursor: pointer;">Đồng ý</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ⚠️ Thay đường dẫn Web App Google Sheets của anh vào đây để đồng bộ Menu từ Google Sheets
-    const MENU_API_URL = 'https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec';
+    const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec';
     let selectedItems = [];
 
-   async function loadMenu() {
-    const container = document.getElementById('menu-container');
-    const MENU_API_URL = 'https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec';
+    async function loadMenu() {
+        const container = document.getElementById('menu-container');
+        try {
+            let response = await fetch(MENU_API_URL, { method: 'GET', redirect: 'follow' });
+            let textData = await response.text();
+            let menuItems = JSON.parse(textData);
 
-    try {
-        // Thêm redirect: 'follow' để xử lý chuyển hướng kết nối từ Google Apps Script
-        let response = await fetch(MENU_API_URL, {
-            method: 'GET',
-            redirect: 'follow'
-        });
+            container.innerHTML = '';
 
-        if (!response.ok) {
-            throw new Error('Lỗi mạng hoặc không thể truy cập API');
+            // Lọc các món ON
+            let activeItems = menuItems.filter(item => item.status && String(item.status).trim().toUpperCase() === 'ON');
+
+            if (activeItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">Hôm nay quán tạm nghỉ hoặc chưa mở món.</p>';
+                return;
+            }
+
+            // Nhóm món theo danh mục (Category)
+            let categories = {};
+            activeItems.forEach(item => {
+                let cat = item.category ? String(item.category).trim() : 'Món Khác';
+                if (!categories[cat]) {
+                    categories[cat] = [];
+                }
+                categories[cat].push(item);
+            });
+
+            // Hiển thị ra giao diện theo từng danh mục
+            for (let cat in categories) {
+                container.innerHTML += `<div class="category-title">📂 ${cat}</div>`;
+                let gridHtml = '<div class="menu-grid">';
+                
+                categories[cat].forEach(item => {
+                    gridHtml += `
+                        <div class="food-card" onclick="selectItem('${item.name}', ${item.price})">
+                            <div class="food-name">${item.name}</div>
+                            <div class="food-price">${Number(item.price).toLocaleString()}đ</div>
+                        </div>
+                    `;
+                });
+                
+                gridHtml += '</div>';
+                container.innerHTML += gridHtml;
+            }
+
+        } catch (e) {
+            console.error('Lỗi load menu:', e);
+            container.innerHTML = '<p style="text-align: center; color: red;">Không thể tải thực đơn từ hệ thống!</p>';
         }
-
-        let menuItems = await response.json();
-        container.innerHTML = '';
-
-        // Lọc danh sách món có trạng thái ON
-        let activeItems = menuItems.filter(item => String(item.status).trim().toUpperCase() === 'ON');
-
-        if (activeItems.length === 0) {
-            container.innerHTML = '<p style="color: #666; font-style: italic;">Hôm nay quán tạm nghỉ hoặc chưa bật danh mục món.</p>';
-            return;
-        }
-
-        activeItems.forEach(item => {
-            container.innerHTML += `
-                <div class="item">
-                    <span><b>${item.name}</b> - <span style="color: #ff4500;">${Number(item.price).toLocaleString()}đ</span></span>
-                    <button type="button" onclick="selectItem('${item.name}', ${item.price})" style="width: auto; padding: 6px 12px; font-size: 13px;">Chọn</button>
-                </div>
-            `;
-        });
-    } catch (e) {
-        console.error('Lỗi load menu:', e);
-        container.innerHTML = `
-            <div style="color: red; padding: 10px; border: 1px dashed red; border-radius: 5px; font-size: 13px;">
-                ⚠️ <b>Chưa tải được thực đơn!</b><br>
-                Anh hãy kiểm tra lại quyền <b>"Anyone"</b> trên Google Apps Script hoặc bấm F12 chọn tab Console để xem chi tiết.
-            </div>
-        `;
     }
-}
 
     loadMenu();
 
@@ -131,7 +174,6 @@
         validateForm();
     }
 
-    // Cho phép khách xóa món trong giỏ hàng
     function removeItem(index) {
         selectedItems.splice(index, 1);
         updateCartUI();
@@ -146,8 +188,8 @@
         }
         cartList.innerHTML = selectedItems.map((i, index) => `
             <div class="cart-item">
-                <span>${i.name} (x${i.quantity}) - ${(i.price * i.quantity).toLocaleString()}đ</span>
-                <button type="button" class="btn-delete" onclick="removeItem(${index})">🗑</button>
+                <span><b>${i.name}</b> (x${i.quantity}) - <span style="color:#ff4500;">${(i.price * i.quantity).toLocaleString()}đ</span></span>
+                <button type="button" class="btn-delete" onclick="removeItem(${index})">Xóa</button>
             </div>
         `).join('');
     }
@@ -164,23 +206,20 @@
         }
     }
 
-    // Hiển thị Popup xác nhận khi khách bấm "Xác nhận đặt hàng"
     function showConfirmPopup(event) {
         if (event) event.preventDefault();
 
-        document.getElementById('popup-cart-summary').innerHTML = selectedItems.map(i => `• ${i.name} (x${i.quantity}): ${(i.price * i.quantity).toLocaleString()}đ`).join('<br>');
+        document.getElementById('popup-cart-summary').innerHTML = selectedItems.map(i => `• <b>${i.name}</b> (x${i.quantity}): ${(i.price * i.quantity).toLocaleString()}đ`).join('<br>');
         let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
         document.getElementById('popup-total').innerText = `Tổng cộng: ${totalMoney.toLocaleString()}đ`;
 
         document.getElementById('confirmModal').style.display = 'block';
     }
 
-    // Nút "Đặt lại" trên Popup: Hủy bảng popup để khách chọn lại
     function cancelOrder() {
         document.getElementById('confirmModal').style.display = 'none';
     }
 
-    // Nút "Đồng ý" trên Popup: Gửi đơn hàng thẳng qua Telegram
     async function submitOrderFinal() {
         document.getElementById('confirmModal').style.display = 'none';
 
@@ -198,14 +237,13 @@
                       `🛒 *Chi tiết món:*\n${itemsText}\n\n` +
                       `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
 
-        // 🤖 CẤU HÌNH BOT TOKEN VÀ CHAT ID CỦA ANH
         const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g'; 
         const CHAT_ID = '-5368737820';    
 
         const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=Markdown&text=${encodeURIComponent(message)}`;
 
         try {
-            let response = await fetch(url, { method: 'GET' });
+            await fetch(url, { method: 'GET' });
             alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
             resetForm();
         } catch (e) {
