@@ -4,17 +4,37 @@
     <meta charset="UTF-8">
     <title>Tiệm Bánh Mì NGUYÊN - Đặt Món Online</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Cấu hình Web App / Shortcut cho điện thoại -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bánh Mì NGUYÊN">
+    <link rel="apple-touch-icon" href="logo.png">
+
     <style>
         body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 15px; margin: 0; color: #333; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .logo-container { text-align: center; margin-bottom: 20px; }
+        .logo-container { text-align: center; margin-bottom: 15px; }
         .logo-container img { max-width: 130px; height: auto; border-radius: 50%; border: 3px solid #ff4500; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        /* Giao diện danh mục và món ăn sinh động dạng lưới nút bấm */
+        /* Nút tạo Shortcut màn hình chính */
+        .btn-shortcut {
+            background: #fff0eb;
+            color: #ff4500;
+            border: 1px dashed #ff4500;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        /* Giao diện danh mục và món ăn dạng lưới */
         .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
         
-        /* Mỗi món là một nút bấm sinh động */
         .food-card {
             background: #fff;
             border: 2px solid #e0e0e0;
@@ -42,15 +62,12 @@
         
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
         
-        /* Nút chính */
         .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-        
-        /* Nút xóa trong giỏ hàng */
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; width: auto !important; }
         
-        /* Popup xác nhận */
-        #confirmModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        /* Popup xác nhận & Hướng dẫn Shortcut */
+        #confirmModal, #shortcutModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 20% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
     </style>
@@ -58,11 +75,15 @@
 <body>
 
 <div class="container">
-    <!-- Logo của quán -->
+    <!-- Logo & Thông tin quán -->
     <div class="logo-container">
         <img src="logo.png" alt="Logo Tiệm Bánh Mì Nguyên" onerror="this.src='https://via.placeholder.com/130?text=Logo+Nguyen'">
         <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
-        <p style="font-size: 12px; color: #666; margin: 2px 0;">SN 372, Đường Quang Trung, Thái Nguyên</p>
+        <p style="font-size: 12px; color: #555; margin: 3px 0;">📍 SN 372, Đường Quang Trung, Thái Nguyên</p>
+        <p style="font-size: 13px; color: #ff4500; font-weight: bold; margin: 3px 0;">📞 Alo ship: 0973.818.199</p>
+        
+        <!-- Nút lưu Shortcut ra màn hình chính -->
+        <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính</button>
     </div>
     
     <!-- Danh sách Menu phân theo danh mục -->
@@ -106,9 +127,65 @@
     </div>
 </div>
 
+<!-- POPUP HƯỚNG DẪN TẠO SHORTCUT CẬP NHẬT TRỰC QUAN -->
+<div id="shortcutModal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color: #ff4500; font-size: 16px;">📲 Thêm vào màn hình chính</h3>
+        <div id="shortcutGuideText" style="font-size: 13px; line-height: 1.5; color: #444;"></div>
+        <button type="button" onclick="closeShortcutGuide()" style="background: #ff4500; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">Đã Hiểu</button>
+    </div>
+</div>
+
 <script>
     const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec';
     let selectedItems = [];
+    let deferredPrompt;
+
+    // Bắt sự kiện cài đặt tự động trên Android
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    function openShortcutGuide() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt = null;
+            });
+            return;
+        }
+
+        let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        let guideHtml = '';
+
+        if (isIOS) {
+            guideHtml = `
+                <p><b>Dành cho iPhone / iPad (Safari):</b></p>
+                <ol style="padding-left: 20px; margin: 5px 0;">
+                    <li>Bấm vào biểu tượng <b>Chia sẻ</b> (hình vuông có mũi tên chỉ lên ➔ ⎋) ở góc dưới màn hình.</li>
+                    <li>Cuộn xuống chọn <b>"Thêm vào Màn hình chính"</b> (Add to Home Screen).</li>
+                    <li>Bấm <b>Thêm</b> ở góc trên bên phải.</li>
+                </ol>
+            `;
+        } else {
+            guideHtml = `
+                <p><b>Dành cho Android (Chrome / Trình duyệt):</b></p>
+                <ol style="padding-left: 20px; margin: 5px 0;">
+                    <li>Bấm vào dấu <b>3 chấm ⋮</b> ở góc trên bên phải trình duyệt.</li>
+                    <li>Chọn <b>"Thêm vào Màn hình chính"</b> (hoặc <i>Cài đặt ứng dụng</i>).</li>
+                    <li>Bấm <b>Thêm</b> để hoàn tất.</li>
+                </ol>
+            `;
+        }
+
+        document.getElementById('shortcutGuideText').innerHTML = guideHtml;
+        document.getElementById('shortcutModal').style.display = 'block';
+    }
+
+    function closeShortcutGuide() {
+        document.getElementById('shortcutModal').style.display = 'none';
+    }
 
     async function loadMenu() {
         const container = document.getElementById('menu-container');
@@ -118,8 +195,6 @@
             let menuItems = JSON.parse(textData);
 
             container.innerHTML = '';
-
-            // Lọc các món ON
             let activeItems = menuItems.filter(item => item.status && String(item.status).trim().toUpperCase() === 'ON');
 
             if (activeItems.length === 0) {
@@ -127,17 +202,13 @@
                 return;
             }
 
-            // Nhóm món theo danh mục (Category)
             let categories = {};
             activeItems.forEach(item => {
                 let cat = item.category ? String(item.category).trim() : 'Món Khác';
-                if (!categories[cat]) {
-                    categories[cat] = [];
-                }
+                if (!categories[cat]) categories[cat] = [];
                 categories[cat].push(item);
             });
 
-            // Hiển thị ra giao diện theo từng danh mục
             for (let cat in categories) {
                 container.innerHTML += `<div class="category-title">📂 ${cat}</div>`;
                 let gridHtml = '<div class="menu-grid">';
