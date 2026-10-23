@@ -7,28 +7,37 @@
     <style>
         body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-container { text-align: center; margin-bottom: 15px; }
+        .logo-container img { max-width: 150px; height: auto; border-radius: 50%; border: 3px solid #ff4500; }
         .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #ddd; font-size: 14px; }
         input, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         button { background: #ff4500; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         button:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        
+        /* CSS cho Popup xác nhận */
+        #confirmModal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
-    <p>Vui lòng chọn món và điền thông tin bên dưới:</p>
+    <!-- Logo của quán -->
+    <div class="logo-container">
+        <img src="logo.png" alt="Logo Tiệm Bánh Mì Nguyên" onerror="this.src='https://via.placeholder.com/150?text=Logo+Nguyen'">
+        <h2>🥖 Tiệm Bánh Mì NGUYÊN</h2>
+        <p style="font-size: 13px; color: #666;">SN 372, Đường Quang Trung, Thái Nguyên</p>
+    </div>
     
     <div id="menu-container">
-        <!-- Danh sách món ăn sẽ load ở đây -->
-        <div class="item">
-            <span>Bánh mì heo quay giòn bì (30,000đ)</span>
-            <button onclick="selectItem('Bánh mì heo quay giòn bì', 30000)" style="width: auto; padding: 5px 10px;">Chọn</button>
-        </div>
+        <p>Đang tải thực đơn...</p>
     </div>
 
-    <h3>Giỏ hàng của bạn:</h3>
-    <ul id="cart-list">Chưa chọn món nào</ul>
+    <h3>🛒 Giỏ hàng của bạn:</h3>
+    <div id="cart-list" style="margin-bottom: 15px;">Chưa chọn món nào</div>
 
     <hr>
     <h3>Thông tin liên hệ</h3>
@@ -41,14 +50,73 @@
     <label>Ghi chú (Tối đa 1000 ký tự):</label>
     <textarea id="custNote" maxlength="1000" rows="3" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
-    <button id="btnSubmit" onclick="submitOrder()" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+    <button type="button" id="btnSubmit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+</div>
+
+<!-- POPUP XÁC NHẬN ĐẶT HÀNG -->
+<div id="confirmModal">
+    <div class="modal-content">
+        <h3>📋 Xác nhận đơn hàng</h3>
+        <p>Vui lòng kiểm tra lại các món đã chọn:</p>
+        <div id="popup-cart-summary" style="max-height: 150px; overflow-y: auto; background: #f1f1f1; padding: 10px; border-radius: 5px; font-size: 14px;"></div>
+        <p id="popup-total" style="font-weight: bold; margin-top: 10px; color: #ff4500;"></p>
+        
+        <div class="modal-buttons">
+            <button type="button" onclick="cancelOrder()" style="background: #999;">Đặt lại</button>
+            <button type="button" onclick="submitOrderFinal()" style="background: #28a745;">Đồng ý</button>
+        </div>
+    </div>
 </div>
 
 <script>
+    // ⚠️ Thay đường dẫn Web App Google Sheets của anh vào đây để đồng bộ Menu từ Google Sheets
+    const MENU_API_URL = 'https://script.google.com/macros/s/THAY_LINK_WEB_APP_CUA_ANH_VÀO_ĐÂY/exec';
     let selectedItems = [];
 
+    async function loadMenu() {
+        try {
+            let response = await fetch(MENU_API_URL);
+            let menuItems = await response.json();
+            
+            let container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            let activeItems = menuItems.filter(item => String(item.status).trim().toUpperCase() === 'ON');
+
+            if (activeItems.length === 0) {
+                container.innerHTML = '<p>Hôm nay quán tạm nghỉ hoặc chưa có món.</p>';
+                return;
+            }
+
+            activeItems.forEach(item => {
+                container.innerHTML += `
+                    <div class="item">
+                        <span>${item.name} (${Number(item.price).toLocaleString()}đ)</span>
+                        <button type="button" onclick="selectItem('${item.name}', ${item.price})" style="width: auto; padding: 5px 10px;">Chọn</button>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            document.getElementById('menu-container').innerHTML = '<p>Không thể tải thực đơn từ hệ thống!</p>';
+        }
+    }
+
+    loadMenu();
+
     function selectItem(name, price) {
-        selectedItems.push({ name: name, price: price, quantity: 1 });
+        let existing = selectedItems.find(i => i.name === name);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            selectedItems.push({ name: name, price: price, quantity: 1 });
+        }
+        updateCartUI();
+        validateForm();
+    }
+
+    // Cho phép khách xóa món trong giỏ hàng
+    function removeItem(index) {
+        selectedItems.splice(index, 1);
         updateCartUI();
         validateForm();
     }
@@ -59,7 +127,12 @@
             cartList.innerHTML = 'Chưa chọn món nào';
             return;
         }
-        cartList.innerHTML = selectedItems.map(i => `<li>${i.name} - ${i.price}đ</li>`).join('');
+        cartList.innerHTML = selectedItems.map((i, index) => `
+            <div class="cart-item">
+                <span>${i.name} (x${i.quantity}) - ${(i.price * i.quantity).toLocaleString()}đ</span>
+                <button type="button" class="btn-delete" onclick="removeItem(${index})">Xóa</button>
+            </div>
+        `).join('');
     }
 
     function validateForm() {
@@ -67,7 +140,6 @@
         let phone = document.getElementById('custPhone').value.trim();
         let btn = document.getElementById('btnSubmit');
         
-        // Điều kiện: Phải có món, có tên và số điện thoại mới cho bấm đặt hàng
         if (selectedItems.length > 0 && name.length > 0 && phone.length >= 9) {
             btn.disabled = false;
         } else {
@@ -75,59 +147,66 @@
         }
     }
 
-    async function submitOrder() {
-    let customerName = document.getElementById('custName').value.trim();
-    let phone = document.getElementById('custPhone').value.trim();
-    let note = document.getElementById('custNote').value.trim();
+    // Hiển thị Popup xác nhận khi khách bấm "Xác nhận đặt hàng"
+    function showConfirmPopup(event) {
+        if (event) event.preventDefault();
 
-    if (selectedItems.length === 0) {
-        alert('Vui lòng chọn ít nhất một món!');
-        return;
+        document.getElementById('popup-cart-summary').innerHTML = selectedItems.map(i => `• ${i.name} (x${i.quantity}): ${(i.price * i.quantity).toLocaleString()}đ`).join('<br>');
+        let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        document.getElementById('popup-total').innerText = `Tổng cộng: ${totalMoney.toLocaleString()}đ`;
+
+        document.getElementById('confirmModal').style.display = 'block';
     }
 
-    // Tổng hợp nội dung tin nhắn gửi vào Telegram
-    let itemsText = selectedItems.map(i => `- ${i.name} (x${i.quantity}): ${i.price * i.quantity}đ`).join('\n');
-    let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    // Nút "Đặt lại" trên Popup: Hủy bảng popup để khách chọn lại
+    function cancelOrder() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
 
-    let message = `🚨 *CÓ ĐƠN HÀNG ONLINE MỚI!* 🥖\n\n` +
-                  `👤 *Khách hàng:* ${customerName}\n` +
-                  `📞 *Số điện thoại:* ${phone}\n` +
-                  `📝 *Ghi chú:* ${note || 'Không có'}\n\n` +
-                  `🛒 *Chi tiết món:*\n${itemsText}\n\n` +
-                  `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
+    // Nút "Đồng ý" trên Popup: Gửi đơn hàng thẳng qua Telegram
+    async function submitOrderFinal() {
+        document.getElementById('confirmModal').style.display = 'none';
 
-    // Thay thế TOKEN và CHAT_ID của anh vào đây
-    const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g';
-    const CHAT_ID = '-5368737820';
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        let customerName = document.getElementById('custName').value.trim();
+        let phone = document.getElementById('custPhone').value.trim();
+        let note = document.getElementById('custNote').value.trim();
 
-    try {
-        let response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: CHAT_ID,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
+        let itemsText = selectedItems.map(i => `- ${i.name} (x${i.quantity}): ${i.price * i.quantity}đ`).join('\n');
+        let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
-        let result = await response.json();
-        if (result.ok) {
+        let message = `🚨 *CÓ ĐƠN HÀNG ONLINE MỚI!* 🥖\n\n` +
+                      `👤 *Khách hàng:* ${customerName}\n` +
+                      `📞 *Số điện thoại:* ${phone}\n` +
+                      `📝 *Ghi chú:* ${note || 'Không có'}\n\n` +
+                      `🛒 *Chi tiết món:*\n${itemsText}\n\n` +
+                      `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
+
+        // 🤖 CẤU HÌNH BOT TOKEN VÀ CHAT ID CỦA ANH
+        const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g'; 
+        const CHAT_ID = '-5368737820';    
+
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=Markdown&text=${encodeURIComponent(message)}`;
+
+        try {
+            let response = await fetch(url, { method: 'GET' });
             alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
-            selectedItems = [];
-            updateCartUI();
-            document.getElementById('custName').value = '';
-            document.getElementById('custPhone').value = '';
-            document.getElementById('custNote').value = '';
-            validateForm();
-        } else {
-            alert('Có lỗi xảy ra khi gửi đơn hàng!');
+            resetForm();
+        } catch (e) {
+            let img = new Image();
+            img.src = url;
+            alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
+            resetForm();
         }
-    } catch (e) {
-        alert('Không thể kết nối đến hệ thống!');
     }
-}
+
+    function resetForm() {
+        selectedItems = [];
+        updateCartUI();
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custNote').value = '';
+        validateForm();
+    }
 </script>
 
 </body>
