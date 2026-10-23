@@ -21,7 +21,6 @@
         .category-title { font-size: 16px; font-weight: bold; color: #ff4500; margin: 20px 0 10px 0; border-bottom: 2px solid #ff4500; padding-bottom: 5px; text-transform: uppercase; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
         
-        /* Thẻ món ăn tích hợp ảnh sinh động */
         .food-card {
             background: #fff;
             border: 2px solid #e0e0e0;
@@ -65,6 +64,28 @@
         .btn-submit { background: #ff4500; color: white; border: none; padding: 14px; width: 100%; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; box-shadow: 0 3px 6px rgba(255,69,0,0.2); }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
         
+        /* Nút gọi điện thoại trực tiếp màu xanh */
+        .btn-call {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            box-shadow: 0 3px 6px rgba(40,167,69,0.2);
+        }
+        .btn-call:hover { background: #218838; }
+
         .btn-shortcut {
             background: #fff0eb;
             color: #ff4500;
@@ -122,7 +143,15 @@
     <label style="font-size: 13px; font-weight: bold;">Ghi chú:</label>
     <textarea id="custNote" maxlength="1000" rows="2" placeholder="Ví dụ: Không hành, thêm tương ớt..."></textarea>
 
+    <!-- Nút gọi điện thoại trực tiếp với cửa hàng -->
+    <a href="tel:0973818199" class="btn-call">
+        📞 Liên hệ trực tiếp với cửa hàng: 0973.818.199
+    </a>
+
+    <!-- Nút xác nhận đặt hàng -->
     <button type="button" id="btnSubmit" class="btn-submit" onclick="showConfirmPopup(event)" disabled>XÁC NHẬN ĐẶT HÀNG</button>
+    
+    <!-- Nút lưu Shortcut ra màn hình chính -->
     <button type="button" class="btn-shortcut" onclick="openShortcutGuide()">📲 Lưu Web Ra Màn Hình Chính Để Dùng Lần Sau</button>
 </div>
 
@@ -227,7 +256,6 @@
                 let gridHtml = '<div class="menu-grid">';
                 
                 categories[cat].forEach(item => {
-                    // Ảnh mặc định nếu trên Google Sheets không có link
                     let imgUrl = item.image && String(item.image).trim().length > 5 
                         ? item.image 
                         : 'logo.png';
