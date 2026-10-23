@@ -355,38 +355,55 @@
     }
 
     async function submitOrderFinal() {
-        document.getElementById('confirmModal').style.display = 'none';
+    document.getElementById('confirmModal').style.display = 'none';
 
-        let customerName = document.getElementById('custName').value.trim();
-        let phone = document.getElementById('custPhone').value.trim();
-        let note = document.getElementById('custNote').value.trim();
+    let customerName = document.getElementById('custName').value.trim();
+    let phone = document.getElementById('custPhone').value.trim();
+    let note = document.getElementById('custNote').value.trim();
 
-        let itemsText = selectedItems.map(i => `- ${i.name} (x${i.quantity}): ${i.price * i.quantity}đ`).join('\n');
-        let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    let itemsText = selectedItems.map(i => `${i.name} (x${i.quantity})`).join(', ');
+    let totalMoney = selectedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
-        let message = `🚨 *CÓ ĐƠN HÀNG ONLINE MỚI!* 🥖\n\n` +
-                      `👤 *Khách hàng:* ${customerName}\n` +
-                      `📞 *Số điện thoại:* ${phone}\n` +
-                      `📝 *Ghi chú:* ${note || 'Không có'}\n\n` +
-                      `🛒 *Chi tiết món:*\n${itemsText}\n\n` +
-                      `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
+    // 1. Gửi đơn hàng lên Google Sheet
+    const orderData = {
+        customerName: customerName,
+        phone: phone,
+        note: note,
+        itemsText: itemsText,
+        totalMoney: totalMoney
+    };
 
-        const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g'; 
-        const CHAT_ID = '-5368737820';    
+    try {
+        fetch(MENU_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+    } catch(err) { console.error("Lỗi gửi Google Sheet:", err); }
 
-        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=Markdown&text=${encodeURIComponent(message)}`;
+    // 2. Gửi thông báo qua Telegram Bot
+    let message = `🚨 *CÓ ĐƠN HÀNG ONLINE MỚI!* 🥖\n\n` +
+                  `👤 *Khách hàng:* ${customerName}\n` +
+                  `📞 *Số điện thoại:* ${phone}\n` +
+                  `📝 *Ghi chú:* ${note || 'Không có'}\n\n` +
+                  `🛒 *Chi tiết món:*\n${selectedItems.map(i => `- ${i.name} (x${i.quantity}): ${(i.price * i.quantity).toLocaleString()}đ`).join('\n')}\n\n` +
+                  `💰 *TỔNG TIỀN:* *${totalMoney.toLocaleString()}đ*`;
 
-        try {
-            await fetch(url, { method: 'GET' });
-            alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
-            resetForm();
-        } catch (e) {
-            let img = new Image();
-            img.src = url;
-            alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
-            resetForm();
-        }
+    const BOT_TOKEN = '8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g'; 
+    const CHAT_ID = '-5368737820';    
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=Markdown&text=${encodeURIComponent(message)}`;
+
+    try {
+        await fetch(url, { method: 'GET' });
+    } catch (e) {
+        let img = new Image();
+        img.src = url;
     }
+
+    alert('Đặt hàng thành công! Quán đã nhận được đơn của bạn.');
+    resetForm();
+}
 
     function resetForm() {
         selectedItems = [];
