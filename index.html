@@ -18,7 +18,7 @@
             color: var(--text-color);
             margin: 0;
             padding: 0;
-            padding-bottom: 90px;
+            padding-bottom: 110px;
         }
 
         header {
@@ -122,6 +122,7 @@
             font-size: 0.85rem;
         }
 
+        /* Thanh giỏ hàng bên dưới cố định */
         .cart-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -137,15 +138,17 @@
         .cart-info {
             display: flex;
             flex-direction: column;
+            max-width: 60%;
         }
 
         .cart-count {
             font-size: 0.85rem;
             color: #666;
+            font-weight: bold;
         }
 
         .cart-total {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary-color);
         }
@@ -154,13 +157,14 @@
             background: #2e7d32;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
         }
 
+        /* Modal chung */
         .modal {
             display: none;
             position: fixed;
@@ -178,17 +182,19 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-title {
             font-weight: bold;
             font-size: 1.1rem;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             color: var(--primary-color);
         }
 
         .form-group {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
@@ -204,6 +210,60 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
+        }
+
+        /* Danh sách topping dạng chip */
+        .topping-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .chip {
+            background: #f1f1f1;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+        }
+
+        .chip.selected {
+            background: #ffe0b2;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Chi tiết giỏ hàng trong modal */
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-info {
+            flex-grow: 1;
+        }
+
+        .cart-item-note {
+            font-size: 0.75rem;
+            color: #e65100;
+        }
+
+        .delete-item-btn {
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 5px;
         }
     </style>
 </head>
@@ -223,17 +283,48 @@
         <p style="text-align:center; color:#777; margin-top: 30px;">Đang tải thực đơn từ hệ thống...</p>
     </div>
 
+    <!-- Thanh giỏ hàng bên dưới -->
     <div class="cart-bar">
         <div class="cart-info">
             <span class="cart-count" id="cart-count">0 món trong giỏ</span>
             <span class="cart-total" id="cart-total">0đ</span>
         </div>
-        <button class="checkout-btn" onclick="openCheckoutModal()">Đặt Hàng Ngay</button>
+        <button class="checkout-btn" onclick="openCheckoutModal()">Xem Giỏ Hàng & Đặt</button>
     </div>
 
+    <!-- Modal chọn Topping / Ghi chú cho từng món -->
+    <div class="modal" id="option-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-item-title">Tên món</div>
+            
+            <div class="form-group">
+                <label>Gợi ý thêm (Topping):</label>
+                <div class="topping-chips" id="topping-chips-container">
+                    <!-- Các nút topping load từ sheet Topping sẽ hiển thị ở đây -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ghi chú riêng cho món này:</label>
+                <input type="text" id="item-custom-note" placeholder="VD: Không ớt, ít đá, nhiều pate...">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button style="flex:1; padding: 10px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor:pointer;" onclick="closeOptionModal()">Hủy</button>
+                <button style="flex:1; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 6px; font-weight: bold; cursor:pointer;" onclick="confirmAddToCart()">Thêm Vào Giỏ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Giỏ Hàng & Gửi Đơn -->
     <div class="modal" id="checkout-modal">
         <div class="modal-content">
-            <div class="modal-title">GỬI ĐƠN HÀNG</div>
+            <div class="modal-title">GIỎ HÀNG CỦA BẠN</div>
+            
+            <div id="cart-items-list" style="max-height: 180px; overflow-y: auto; margin-bottom: 12px;">
+                <!-- Danh sách món đã chọn -->
+            </div>
+
             <div class="form-group">
                 <label>Họ và Tên (*)</label>
                 <input type="text" id="cust-name" placeholder="Nhập tên của bạn...">
@@ -243,42 +334,51 @@
                 <input type="tel" id="cust-phone" placeholder="Nhập số điện thoại...">
             </div>
             <div class="form-group">
-                <label>Ghi Chú Đơn Hàng / Địa Chỉ Giao</label>
-                <textarea id="cust-note" rows="2" placeholder="VD: Giao tận nơi tại cổng trường, ít ớt..."></textarea>
+                <label>Ghi Chú Chung / Địa Chỉ Giao</label>
+                <textarea id="cust-note" rows="2" placeholder="VD: Giao tận nơi tại cổng trường..."></textarea>
             </div>
-            <div id="cart-summary" style="font-size: 0.85rem; color: #555; margin: 10px 0; max-height: 100px; overflow-y: auto;"></div>
+
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button style="flex:1; padding: 10px; border: 1px solid #ccc; background: white; border-radius: 6px;" onclick="closeCheckoutModal()">Quay lại</button>
-                <button style="flex:1; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 6px; font-weight: bold;" id="submit-btn" onclick="submitOrder()">XÁC NHẬN ĐẶT</button>
+                <button style="flex:1; padding: 10px; border: 1px solid #ccc; background: white; border-radius: 6px; cursor:pointer;" onclick="closeCheckoutModal()">Quay lại</button>
+                <button style="flex:1; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 6px; font-weight: bold; cursor:pointer;" id="submit-btn" onclick="submitOrder()">XÁC NHẬN ĐẶT ĐƠN</button>
             </div>
         </div>
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8fiK6D90IG1BLWluo6uHhfzIfpQak0L0CmxNMdJP0cxP1raNNvu6OZaU8ufTBNYIUyQ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec";
         const TELEGRAM_BOT_TOKEN = "8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g";
         const TELEGRAM_CHAT_ID = "-5368737820";
 
         let cart = [];
+        let globalMenuData = {};
+        let toppingList = []; // Danh sách topping lấy từ sheet danhmuc
+        let selectedItemForOption = null;
 
         async function loadMenuFromSheet() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
+                globalMenuData = data;
                 
+                // Lọc riêng danh mục Topping từ sheet để làm gợi ý
+                if (data["Topping"]) {
+                    toppingList = data["Topping"];
+                }
+
                 const container = document.getElementById('menu-container');
                 container.innerHTML = '';
 
-                // Duyệt qua từng danh mục trả về từ Google Sheet (Bánh mì, Đồ uống, Nước ép...)
                 for (let category in data) {
+                    // Không hiển thị riêng danh mục Topping thành khối menu chính ngoài màn hình
+                    if (category.toLowerCase() === "topping") continue;
+
                     if (data[category].length > 0) {
-                        // Tạo tiêu đề danh mục
                         const titleDiv = document.createElement('div');
                         titleDiv.className = 'section-title';
                         titleDiv.innerText = category;
                         container.appendChild(titleDiv);
 
-                        // Tạo lưới chứa các món trong danh mục
                         const gridDiv = document.createElement('div');
                         gridDiv.className = 'menu-grid';
 
@@ -294,13 +394,8 @@
                                 <div class="item-price">${item.price.toLocaleString()}đ</div>
                             `;
 
-                            btn.onclick = () => {
-                                cart.push({ name: item.name, price: item.price });
-                                updateCartUI();
-                                btn.style.borderColor = '#e65100';
-                                setTimeout(() => btn.style.borderColor = '#ffe0b2', 200);
-                            };
-
+                            // Khi bấm vào món, mở bảng chọn ghi chú/topping
+                            btn.onclick = () => openOptionModal(item);
                             gridDiv.appendChild(btn);
                         });
 
@@ -308,28 +403,119 @@
                     }
                 }
             } catch (err) {
-                console.log("Lỗi tải thực đơn động từ Google Sheet:", err);
-                document.getElementById('menu-container').innerHTML = '<p style="text-align:center; color:red;">Không thể tải thực đơn từ Google Sheet. Vui lòng kiểm tra lại!</p>';
+                console.log("Lỗi tải thực đơn từ Google Sheet:", err);
+                document.getElementById('menu-container').innerHTML = '<p style="text-align:center; color:red;">Không thể tải thực đơn. Vui lòng kiểm tra lại kết nối!</p>';
             }
         }
 
+        function openOptionModal(item) {
+            selectedItemForOption = item;
+            document.getElementById('modal-item-title').innerText = `${item.name} - ${item.price.toLocaleString()}đ`;
+            document.getElementById('item-custom-note').value = '';
+
+            // Render các gợi ý topping lấy từ sheet
+            const chipsContainer = document.getElementById('topping-chips-container');
+            chipsContainer.innerHTML = '';
+
+            if (toppingList.length > 0) {
+                toppingList.forEach(top => {
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.innerText = `${top.name} (+${top.price.toLocaleString()}đ)`;
+                    chip.onclick = () => {
+                        chip.classList.toggle('selected');
+                    };
+                    chipsContainer.appendChild(chip);
+                });
+            } else {
+                chipsContainer.innerHTML = '<span style="font-size:0.85rem; color:#777;">Không có gợi ý topping nào.</span>';
+            }
+
+            document.getElementById('option-modal').style.display = 'flex';
+        }
+
+        function closeOptionModal() {
+            document.getElementById('option-modal').style.display = 'none';
+        }
+
+        function confirmAddToCart() {
+            if (!selectedItemForOption) return;
+
+            let finalPrice = selectedItemForOption.price;
+            let notes = [];
+
+            // Lấy các topping được chọn từ chip
+            const selectedChips = document.querySelectorAll('#topping-chips-container .chip.selected');
+            selectedChips.forEach(chip => {
+                notes.push(chip.innerText);
+                // Tìm giá tiền của topping trong toppingList để cộng thêm vào tổng tiền món
+                let topNameClean = chip.innerText.split(' (+')[0];
+                let foundTop = toppingList.find(t => t.name === topNameClean);
+                if (foundTop) {
+                    finalPrice += Number(foundTop.price);
+                }
+            });
+
+            // Lấy thêm ghi chú tự nhập
+            const customNote = document.getElementById('item-custom-note').value.trim();
+            if (customNote) {
+                notes.push(customNote);
+            }
+
+            cart.push({
+                name: selectedItemForOption.name,
+                price: finalPrice,
+                note: notes.join(', ')
+            });
+
+            closeOptionModal();
+            updateCartUI();
+        }
+
         function updateCartUI() {
-            document.getElementById('cart-count').innerText = `${cart.length} món trong giỏ`;
-            const total = cart.reduce((sum, i) => sum + i.price, 0);
-            document.getElementById('cart-total').innerText = total.toLocaleString() + 'đ';
+            const totalCount = cart.length;
+            const totalAmount = cart.reduce((sum, i) => sum + i.price, 0);
+            
+            document.getElementById('cart-count').innerText = `${totalCount} món trong giỏ`;
+            document.getElementById('cart-total').innerText = totalAmount.toLocaleString() + 'đ';
         }
 
         function openCheckoutModal() {
             if (cart.length === 0) {
-                alert('Vui lòng chọn ít nhất một món ăn!');
+                alert('Giỏ hàng của bạn đang trống!');
                 return;
             }
-            let summaryHTML = '<b>Chi tiết giỏ hàng:</b><br>';
-            cart.forEach((i, idx) => {
-                summaryHTML += `${idx + 1}. ${i.name} - ${i.price.toLocaleString()}đ<br>`;
-            });
-            document.getElementById('cart-summary').innerHTML = summaryHTML;
+
+            renderCartItemsList();
             document.getElementById('checkout-modal').style.display = 'flex';
+        }
+
+        function renderCartItemsList() {
+            const listContainer = document.getElementById('cart-items-list');
+            listContainer.innerHTML = '';
+
+            cart.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                row.innerHTML = `
+                    <div class="cart-item-info">
+                        <b>${item.name}</b> - ${item.price.toLocaleString()}đ
+                        ${item.note ? `<div class="cart-item-note">Ghi chú: ${item.note}</div>` : ''}
+                    </div>
+                    <button class="delete-item-btn" onclick="removeCartItem(${index})" title="Xóa món">✕</button>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+            if (cart.length === 0) {
+                closeCheckoutModal();
+            } else {
+                renderCartItemsList();
+            }
         }
 
         function closeCheckoutModal() {
@@ -348,10 +534,10 @@
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            btn.innerText = 'Đang gửi...';
+            btn.innerText = 'Đang gửi đơn...';
 
             const totalAmount = cart.reduce((sum, i) => sum + i.price, 0);
-            const itemsDetail = cart.map(i => i.name).join('; ');
+            const itemsDetail = cart.map(i => `${i.name}${i.note ? ' (' + i.note + ')' : ''}`).join('; ');
             const orderId = 'WEB-' + Math.floor(1000 + Math.random() * 9000);
             const nowStr = new Date().toLocaleString('vi-VN');
 
@@ -366,6 +552,7 @@
             };
 
             try {
+                // 1. Gửi lên Google Sheet cho POS iPad
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -373,6 +560,7 @@
                     body: JSON.stringify(payload)
                 });
 
+                // 2. Gửi thông báo về Telegram
                 const msg = `🚀 *ĐƠN HÀNG MỚI TỪ WEB* 🚀\n\n📌 Mã đơn: ${orderId}\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🛒 Món: ${itemsDetail}\n💰 Tổng tiền: ${totalAmount.toLocaleString()}đ\n📝 Ghi chú: ${note}`;
                 
                 fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -381,7 +569,7 @@
                     body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
                 });
 
-                alert('🎉 Đặt hàng thành công! Tiệm Bánh Mì NGUYÊN sẽ liên hệ xác nhận ngay.');
+                alert('🎉 Đặt hàng thành công! Tiệm Bánh Mì NGUYÊN đã nhận được đơn.');
                 cart = [];
                 updateCartUI();
                 closeCheckoutModal();
@@ -394,7 +582,7 @@
                 console.error(err);
             } finally {
                 btn.disabled = false;
-                btn.innerText = 'XÁC NHẬN ĐẶT';
+                btn.innerText = 'XÁC NHẬN ĐẶT ĐƠN';
             }
         }
 
