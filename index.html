@@ -227,7 +227,7 @@
 
     <header>
         <div class="logo-container">
-            <img src="logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/50?text=BMN'">
+            <img src="logo.png" alt="Logo Tiệm Bánh Mì NGUYÊN" onerror="this.src='https://via.placeholder.com/50?text=BMN'">
             <div>
                 <h1>Tiệm Bánh Mì NGUYÊN</h1>
                 <p>372 Quang Trung, Thịnh Đán, Thái Nguyên</p>
@@ -289,10 +289,10 @@
     </div>
 
     <script>
-        // CẤU HÌNH ĐƯỜNG DẪN GOOGLE APPS SCRIPT VÀ TELEGRAM BOT
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJBgpocbYbYkT3FOnOdu2Uzz_B3kQmrmFi--15KN938oK1lDPsG3nAEECESPbH0M6jnQ/exec";
-        const TELEGRAM_BOT_TOKEN = ""; // Điền Bot Token nếu dùng (Tùy chọn)
-        const TELEGRAM_CHAT_ID = "";   // Điền Chat ID nếu dùng (Tùy chọn)
+        // CẤU HÌNH THÔNG TIN KẾT NỐI THEO YÊU CẦU CỦA ANH
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec";
+        const TELEGRAM_BOT_TOKEN = "8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g";
+        const TELEGRAM_CHAT_ID = "-5368737820";
 
         const menuData = {
             "BÁNH MÌ": [
@@ -391,7 +391,6 @@
             let extraPrice = 0;
             let noteList = [];
 
-            // Quét topping được chọn
             const checkboxes = document.querySelectorAll('#modal-options-body input[type="checkbox"]:checked');
             checkboxes.forEach(cb => {
                 extraPrice += parseInt(cb.getAttribute('data-price'));
@@ -435,7 +434,6 @@
             document.getElementById('checkout-modal').style.display = 'none';
         }
 
-        // HÀM GỬI ĐƠN HÀNG LÊN GOOGLE SHEET & TELEGRAM
         async function submitOrder() {
             const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
@@ -455,7 +453,6 @@
             const orderId = 'WEB-' + Math.floor(1000 + Math.random() * 9000);
             const nowStr = new Date().toLocaleString('vi-VN');
 
-            // Đóng gói dữ liệu gửi lên Google Sheet
             const payload = {
                 madon: orderId,
                 thoigian: nowStr,
@@ -467,23 +464,22 @@
             };
 
             try {
-                // 1. GỬI DỮ LIỆU SANG GOOGLE SHEET (DÙNG CHO POS IPAD TẢI VỀ)
+                // 1. GỬI SANG GOOGLE SHEET CHO POS TRÊN IPAD TẢI VỀ
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Tránh lỗi CORS trên trình duyệt di động
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                // 2. GỬI BÁO THÔNG BÁO SANG TELEGRAM (NẾU CÓ CẤU HÌNH)
-                if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
-                    const msg = `🚀 *ĐƠN HÀNG MỚI TỪ WEB* 🚀\n\n📌 Mã đơn: ${orderId}\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🛒 Món: ${itemsDetail}\n💰 Tổng tiền: ${totalAmount.toLocaleString()}đ\n📝 Ghi chú: ${note}`;
-                    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-                    });
-                }
+                // 2. GỬI BÁO THÔNG BÁO VỀ TELEGRAM NHÓM QUÁN
+                const msg = `🚀 *ĐƠN HÀNG MỚI TỪ WEB* 🚀\n\n📌 Mã đơn: ${orderId}\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🛒 Món: ${itemsDetail}\n💰 Tổng tiền: ${totalAmount.toLocaleString()}đ\n📝 Ghi chú: ${note}`;
+                
+                fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
 
                 alert('🎉 Đặt hàng thành công! Tiệm Bánh Mì NGUYÊN sẽ liên hệ xác nhận ngay.');
                 cart = [];
