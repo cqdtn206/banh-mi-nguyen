@@ -19,7 +19,7 @@
             color: var(--text-color);
             margin: 0;
             padding: 0;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
         header {
@@ -74,95 +74,49 @@
             padding-left: 8px;
         }
 
+        /* Lưới hiển thị các nút món ăn */
         .menu-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
 
-        .menu-item {
+        /* Mỗi món là 1 Button hoàn chỉnh */
+        .menu-btn {
             background: var(--card-bg);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .item-info h3 {
-            margin: 0 0 5px 0;
-            font-size: 1rem;
-        }
-
-        .item-info .price {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-
-        .add-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-weight: bold;
+            border: 2px solid #ffe0b2;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
             cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .add-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Modal Topping & Ghi chú */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 200;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: 0.15s ease-in-out;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 75px;
         }
 
-        .modal-content {
-            background: white;
-            width: 90%;
-            max-width: 450px;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .menu-btn:active {
+            transform: scale(0.96);
+            background-color: #fff3e0;
         }
 
-        .modal-title {
+        .menu-btn .item-name {
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .menu-btn .item-price {
             color: var(--primary-color);
-        }
-
-        .option-group {
-            margin-bottom: 12px;
-        }
-
-        .option-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
             font-weight: bold;
-        }
-
-        .topping-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
             font-size: 0.9rem;
         }
 
-        /* Giỏ hàng thanh cố định bên dưới */
+        /* Thanh giỏ hàng bên dưới */
         .cart-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -202,7 +156,33 @@
             cursor: pointer;
         }
 
-        /* Form đặt hàng */
+        /* Modal Điền Thông Tin Đặt Hàng */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .modal-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
         .form-group {
             margin-bottom: 10px;
         }
@@ -237,10 +217,14 @@
 
     <div class="container">
         <div class="section-title">🥖 BÁNH MÌ KHIẾN BẠN MÊ MẨN</div>
-        <div class="menu-grid" id="banhmi-menu"></div>
+        <div class="menu-grid" id="banhmi-menu">
+            <p style="text-align:center; color:#777; grid-column: span 2;">Đang tải thực đơn...</p>
+        </div>
 
         <div class="section-title">🥤 NƯỚC UỐNG GIẢI KHÁT</div>
-        <div class="menu-grid" id="nuoc-menu"></div>
+        <div class="menu-grid" id="nuoc-menu">
+            <p style="text-align:center; color:#777; grid-column: span 2;">Đang tải thực đơn...</p>
+        </div>
     </div>
 
     <!-- Thanh giỏ hàng bên dưới -->
@@ -250,18 +234,6 @@
             <span class="cart-total" id="cart-total">0đ</span>
         </div>
         <button class="checkout-btn" onclick="openCheckoutModal()">Đặt Hàng Ngay</button>
-    </div>
-
-    <!-- Modal tùy chọn món (Topping/Ghi chú) -->
-    <div class="modal" id="option-modal">
-        <div class="modal-content">
-            <div class="modal-title" id="modal-item-name">Tên món</div>
-            <div id="modal-options-body"></div>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button style="flex:1; padding: 10px; border: 1px solid #ccc; background: white; border-radius: 6px;" onclick="closeOptionModal()">Hủy</button>
-                <button style="flex:1; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 6px; font-weight: bold;" onclick="confirmAddToCart()">Thêm Vào Giỏ</button>
-            </div>
-        </div>
     </div>
 
     <!-- Modal Điền Thông Tin Đặt Hàng -->
@@ -289,125 +261,77 @@
     </div>
 
     <script>
-        // CẤU HÌNH THÔNG TIN KẾT NỐI THEO YÊU CẦU CỦA ANH
+        // THÔNG TIN KẾT NỐI GOOGLE APPS SCRIPT VÀ TELEGRAM
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec";
         const TELEGRAM_BOT_TOKEN = "8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g";
         const TELEGRAM_CHAT_ID = "-5368737820";
 
-        const menuData = {
-            "BÁNH MÌ": [
+        let cart = [];
+
+        // TẢI MENU TỪ GOOGLE SHEET (DỰA TRÊN HÀM GET CỦA APPS SCRIPT)
+        async function loadMenuFromSheet() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                
+                // Giả sử API trả về danh sách món hoặc ta dùng menu mẫu nếu sheet chưa có cấu trúc menu
+                // Ở đây code hỗ trợ tự động phân loại theo danh mục
+                renderMenu(data);
+            } catch (err) {
+                console.log("Dùng menu mặc định do chưa cấu hình trả menu từ Sheet:", err);
+                renderDefaultMenu();
+            }
+        }
+
+        function renderDefaultMenu() {
+            const banhMiList = [
                 { name: "Bánh mì heo quay giòn bì", price: 30000 },
                 { name: "Bánh mì thịt xiên nướng", price: 30000 },
                 { name: "Bánh mì xá xíu nướng", price: 25000 },
                 { name: "Bánh mì gà ngũ vị", price: 25000 },
                 { name: "Bánh mì jambong mix xá xíu", price: 35000 },
-                { name: "Bánh mì pate, sốt trứng, ruốc", price: 15000 },
                 { name: "Bánh mì pate trứng", price: 18000 }
-            ],
-            "NƯỚC UỐNG": [
+            ];
+
+            const nuocList = [
                 { name: "Trà trái cây", price: 25000 },
                 { name: "Trà sữa đậm vị truyền thống", price: 35000 },
                 { name: "Cà phê sữa", price: 20000 },
                 { name: "Bạc sỉu", price: 25000 }
-            ]
-        };
+            ];
 
-        const toppings = {
-            "BÁNH MÌ": [
-                { name: "Thêm trứng", price: 8000 },
-                { name: "Thêm xúc xích", price: 8000 }
-            ],
-            "NƯỚC UỐNG": [
-                { name: "Trân châu trắng giòn", price: 5000 },
-                { name: "Trân châu đen", price: 5000 }
-            ]
-        };
-
-        let cart = [];
-        let selectedItem = null;
-        let selectedCategory = '';
-
-        function initMenu() {
             const bmContainer = document.getElementById('banhmi-menu');
             const nuocContainer = document.getElementById('nuoc-menu');
 
-            menuData["BÁNH MÌ"].forEach(item => {
-                bmContainer.appendChild(createItemCard(item, "BÁNH MÌ"));
+            bmContainer.innerHTML = '';
+            nuocContainer.innerHTML = '';
+
+            banhMiList.forEach(item => {
+                bmContainer.appendChild(createMenuButton(item.name, item.price));
             });
 
-            menuData["NƯỚC UỐNG"].forEach(item => {
-                nuocContainer.appendChild(createItemCard(item, "NƯỚC UỐNG"));
+            nuocList.forEach(item => {
+                nuocContainer.appendChild(createMenuButton(item.name, item.price));
             });
         }
 
-        function createItemCard(item, category) {
-            const div = document.createElement('div');
-            div.className = 'menu-item';
-            div.innerHTML = `
-                <div class="item-info">
-                    <h3>${item.name}</h3>
-                    <div class="price">${item.price.toLocaleString()}đ</div>
-                </div>
-                <button class="add-btn" onclick="openOptionModal('${item.name}', ${item.price}, '${category}')">+ Thêm</button>
+        function createMenuButton(name, price) {
+            const btn = document.createElement('div');
+            btn.className = 'menu-btn';
+            btn.innerHTML = `
+                <div class="item-name">${name}</div>
+                <div class="item-price">${price.toLocaleString()}đ</div>
             `;
-            return div;
-        }
-
-        function openOptionModal(name, price, category) {
-            selectedItem = { name, price };
-            selectedCategory = category;
-            document.getElementById('modal-item-name').innerText = name + ` (${price.toLocaleString()}đ)`;
-            
-            let optionsHTML = '';
-            if (toppings[category]) {
-                optionsHTML += `<div class="option-group"><label>Chọn Topping Thêm:</label>`;
-                toppings[category].forEach((top, idx) => {
-                    optionsHTML += `
-                        <div class="topping-item">
-                            <input type="checkbox" id="top-${idx}" value="${top.name}" data-price="${top.price}">
-                            <label for="top-${idx}">${top.name} (+${top.price.toLocaleString()}đ)</label>
-                        </div>
-                    `;
-                });
-                optionsHTML += `</div>`;
-            }
-
-            optionsHTML += `
-                <div class="option-group">
-                    <label>Ghi chú món:</label>
-                    <input type="text" id="item-note" placeholder="VD: Không ớt, ít đá...">
-                </div>
-            `;
-
-            document.getElementById('modal-options-body').innerHTML = optionsHTML;
-            document.getElementById('option-modal').style.display = 'flex';
-        }
-
-        function closeOptionModal() {
-            document.getElementById('option-modal').style.display = 'none';
-        }
-
-        function confirmAddToCart() {
-            let extraPrice = 0;
-            let noteList = [];
-
-            const checkboxes = document.querySelectorAll('#modal-options-body input[type="checkbox"]:checked');
-            checkboxes.forEach(cb => {
-                extraPrice += parseInt(cb.getAttribute('data-price'));
-                noteList.push(cb.value);
-            });
-
-            const userNote = document.getElementById('item-note').value.trim();
-            if (userNote) noteList.push(userNote);
-
-            cart.push({
-                name: selectedItem.name,
-                price: selectedItem.price + extraPrice,
-                note: noteList.join(', ')
-            });
-
-            closeOptionModal();
-            updateCartUI();
+            // Bấm trực tiếp vào nút là thêm vào giỏ hàng ngay
+            btn.onclick = () => {
+                cart.push({ name, price, note: '' });
+                updateCartUI();
+                
+                // Hiệu ứng nhẹ khi bấm
+                btn.style.borderColor = '#e65100';
+                setTimeout(() => btn.style.borderColor = '#ffe0b2', 200);
+            };
+            return btn;
         }
 
         function updateCartUI() {
@@ -424,7 +348,7 @@
 
             let summaryHTML = '<b>Chi tiết giỏ hàng:</b><br>';
             cart.forEach((i, idx) => {
-                summaryHTML += `${idx + 1}. ${i.name} - ${i.price.toLocaleString()}đ ${i.note ? '[' + i.note + ']' : ''}<br>`;
+                summaryHTML += `${idx + 1}. ${i.name} - ${i.price.toLocaleString()}đ<br>`;
             });
             document.getElementById('cart-summary').innerHTML = summaryHTML;
             document.getElementById('checkout-modal').style.display = 'flex';
@@ -436,69 +360,4 @@
 
         async function submitOrder() {
             const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-            const note = document.getElementById('cust-note').value.trim();
-
-            if (!name || !phone) {
-                alert('Vui lòng điền đầy đủ Họ tên và Số điện thoại!');
-                return;
-            }
-
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerText = 'Đang gửi...';
-
-            const totalAmount = cart.reduce((sum, i) => sum + i.price, 0);
-            const itemsDetail = cart.map(i => `${i.name}${i.note ? ' (' + i.note + ')' : ''}`).join('; ');
-            const orderId = 'WEB-' + Math.floor(1000 + Math.random() * 9000);
-            const nowStr = new Date().toLocaleString('vi-VN');
-
-            const payload = {
-                madon: orderId,
-                thoigian: nowStr,
-                khachhang: name,
-                sdt: phone,
-                chitietmon: itemsDetail,
-                tongtien: totalAmount,
-                ghichu: note
-            };
-
-            try {
-                // 1. GỬI SANG GOOGLE SHEET CHO POS TRÊN IPAD TẢI VỀ
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                // 2. GỬI BÁO THÔNG BÁO VỀ TELEGRAM NHÓM QUÁN
-                const msg = `🚀 *ĐƠN HÀNG MỚI TỪ WEB* 🚀\n\n📌 Mã đơn: ${orderId}\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🛒 Món: ${itemsDetail}\n💰 Tổng tiền: ${totalAmount.toLocaleString()}đ\n📝 Ghi chú: ${note}`;
-                
-                fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
-                });
-
-                alert('🎉 Đặt hàng thành công! Tiệm Bánh Mì NGUYÊN sẽ liên hệ xác nhận ngay.');
-                cart = [];
-                updateCartUI();
-                closeCheckoutModal();
-                document.getElementById('cust-name').value = '';
-                document.getElementById('cust-phone').value = '';
-                document.getElementById('cust-note').value = '';
-
-            } catch (err) {
-                alert('Lỗi kết nối khi gửi đơn, vui lòng gọi điện trực tiếp cho quán!');
-                console.error(err);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'XÁC NHẬN ĐẶT';
-            }
-        }
-
-        window.onload = initMenu;
-    </script>
-</body>
-</html>
+            const phone = document.getElementById
