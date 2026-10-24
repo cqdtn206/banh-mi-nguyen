@@ -68,9 +68,10 @@
             font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary-color);
-            margin: 15px 0 10px 0;
+            margin: 20px 0 10px 0;
             border-left: 4px solid var(--primary-color);
             padding-left: 8px;
+            text-transform: uppercase;
         }
 
         .menu-grid {
@@ -83,7 +84,7 @@
             background: var(--card-bg);
             border: 2px solid #ffe0b2;
             border-radius: 10px;
-            padding: 12px 8px;
+            padding: 10px;
             text-align: center;
             cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -92,7 +93,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 75px;
+            min-height: 85px;
         }
 
         .menu-btn:active {
@@ -100,17 +101,25 @@
             background-color: #fff3e0;
         }
 
+        .menu-btn img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 4px;
+        }
+
         .menu-btn .item-name {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .menu-btn .item-price {
             color: var(--primary-color);
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .cart-bar {
@@ -210,16 +219,8 @@
         </div>
     </header>
 
-    <div class="container">
-        <div class="section-title">🥖 BÁNH MÌ KHIẾN BẠN MÊ MẨN</div>
-        <div class="menu-grid" id="banhmi-menu">
-            <p style="text-align:center; color:#777; grid-column: span 2;">Đang tải thực đơn...</p>
-        </div>
-
-        <div class="section-title">🥤 NƯỚC UỐNG GIẢI KHÁT</div>
-        <div class="menu-grid" id="nuoc-menu">
-            <p style="text-align:center; color:#777; grid-column: span 2;">Đang tải thực đơn...</p>
-        </div>
+    <div class="container" id="menu-container">
+        <p style="text-align:center; color:#777; margin-top: 30px;">Đang tải thực đơn từ hệ thống...</p>
     </div>
 
     <div class="cart-bar">
@@ -265,63 +266,51 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
                 
-                const bmContainer = document.getElementById('banhmi-menu');
-                const nuocContainer = document.getElementById('nuoc-menu');
+                const container = document.getElementById('menu-container');
+                container.innerHTML = '';
 
-                bmContainer.innerHTML = '';
-                nuocContainer.innerHTML = '';
+                // Duyệt qua từng danh mục trả về từ Google Sheet (Bánh mì, Đồ uống, Nước ép...)
+                for (let category in data) {
+                    if (data[category].length > 0) {
+                        // Tạo tiêu đề danh mục
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'section-title';
+                        titleDiv.innerText = category;
+                        container.appendChild(titleDiv);
 
-                if (data.banhmi) {
-                    data.banhmi.forEach(item => {
-                        bmContainer.appendChild(createMenuButton(item.name, item.price));
-                    });
-                }
-                if (data.nuoc) {
-                    data.nuoc.forEach(item => {
-                        nuocContainer.appendChild(createMenuButton(item.name, item.price));
-                    });
+                        // Tạo lưới chứa các món trong danh mục
+                        const gridDiv = document.createElement('div');
+                        gridDiv.className = 'menu-grid';
+
+                        data[category].forEach(item => {
+                            const btn = document.createElement('div');
+                            btn.className = 'menu-btn';
+                            
+                            let imgHTML = item.image ? `<img src="${item.image}" onerror="this.style.display='none'">` : '';
+                            
+                            btn.innerHTML = `
+                                ${imgHTML}
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-price">${item.price.toLocaleString()}đ</div>
+                            `;
+
+                            btn.onclick = () => {
+                                cart.push({ name: item.name, price: item.price });
+                                updateCartUI();
+                                btn.style.borderColor = '#e65100';
+                                setTimeout(() => btn.style.borderColor = '#ffe0b2', 200);
+                            };
+
+                            gridDiv.appendChild(btn);
+                        });
+
+                        container.appendChild(gridDiv);
+                    }
                 }
             } catch (err) {
-                console.log("Lỗi tải menu từ Sheet, hiển thị menu mặc định", err);
-                renderDefaultMenu();
+                console.log("Lỗi tải thực đơn động từ Google Sheet:", err);
+                document.getElementById('menu-container').innerHTML = '<p style="text-align:center; color:red;">Không thể tải thực đơn từ Google Sheet. Vui lòng kiểm tra lại!</p>';
             }
-        }
-
-        function renderDefaultMenu() {
-            const banhMiList = [
-                { name: "Bánh mì heo quay giòn bì", price: 30000 },
-                { name: "Bánh mì thịt xiên nướng", price: 30000 },
-                { name: "Bánh mì xá xíu nướng", price: 25000 },
-                { name: "Bánh mì pate trứng", price: 18000 }
-            ];
-            const nuocList = [
-                { name: "Trà trái cây", price: 25000 },
-                { name: "Cà phê sữa", price: 20000 }
-            ];
-
-            const bmContainer = document.getElementById('banhmi-menu');
-            const nuocContainer = document.getElementById('nuoc-menu');
-            bmContainer.innerHTML = '';
-            nuocContainer.innerHTML = '';
-
-            banhMiList.forEach(item => bmContainer.appendChild(createMenuButton(item.name, item.price)));
-            nuocList.forEach(item => nuocContainer.appendChild(createMenuButton(item.name, item.price)));
-        }
-
-        function createMenuButton(name, price) {
-            const btn = document.createElement('div');
-            btn.className = 'menu-btn';
-            btn.innerHTML = `
-                <div class="item-name">${name}</div>
-                <div class="item-price">${price.toLocaleString()}đ</div>
-            `;
-            btn.onclick = () => {
-                cart.push({ name, price });
-                updateCartUI();
-                btn.style.borderColor = '#e65100';
-                setTimeout(() => btn.style.borderColor = '#ffe0b2', 200);
-            };
-            return btn;
         }
 
         function updateCartUI() {
