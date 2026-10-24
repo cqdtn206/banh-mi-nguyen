@@ -7,7 +7,6 @@
     <style>
         :root {
             --primary-color: #e65100;
-            --secondary-color: #ff9800;
             --bg-color: #f5f5f5;
             --card-bg: #ffffff;
             --text-color: #333333;
@@ -74,14 +73,12 @@
             padding-left: 8px;
         }
 
-        /* Lưới hiển thị các nút món ăn */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
 
-        /* Mỗi món là 1 Button hoàn chỉnh */
         .menu-btn {
             background: var(--card-bg);
             border: 2px solid #ffe0b2;
@@ -116,7 +113,6 @@
             font-size: 0.9rem;
         }
 
-        /* Thanh giỏ hàng bên dưới */
         .cart-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -156,7 +152,6 @@
             cursor: pointer;
         }
 
-        /* Modal Điền Thông Tin Đặt Hàng */
         .modal {
             display: none;
             position: fixed;
@@ -227,7 +222,6 @@
         </div>
     </div>
 
-    <!-- Thanh giỏ hàng bên dưới -->
     <div class="cart-bar">
         <div class="cart-info">
             <span class="cart-count" id="cart-count">0 món trong giỏ</span>
@@ -236,7 +230,6 @@
         <button class="checkout-btn" onclick="openCheckoutModal()">Đặt Hàng Ngay</button>
     </div>
 
-    <!-- Modal Điền Thông Tin Đặt Hàng -->
     <div class="modal" id="checkout-modal">
         <div class="modal-content">
             <div class="modal-title">GỬI ĐƠN HÀNG</div>
@@ -261,24 +254,35 @@
     </div>
 
     <script>
-        // THÔNG TIN KẾT NỐI GOOGLE APPS SCRIPT VÀ TELEGRAM
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9I8nZ9wkmU2P6IPShCbbdxuhdAF03yXjNQWtNFH1DCsYQpjH3A3znC4R7rSLDZUHS5g/exec";
         const TELEGRAM_BOT_TOKEN = "8504426877:AAHHT99NJRxpdeSwg2cjCuukbpjwQWR0t0g";
         const TELEGRAM_CHAT_ID = "-5368737820";
 
         let cart = [];
 
-        // TẢI MENU TỪ GOOGLE SHEET (DỰA TRÊN HÀM GET CỦA APPS SCRIPT)
         async function loadMenuFromSheet() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 const data = await response.json();
                 
-                // Giả sử API trả về danh sách món hoặc ta dùng menu mẫu nếu sheet chưa có cấu trúc menu
-                // Ở đây code hỗ trợ tự động phân loại theo danh mục
-                renderMenu(data);
+                const bmContainer = document.getElementById('banhmi-menu');
+                const nuocContainer = document.getElementById('nuoc-menu');
+
+                bmContainer.innerHTML = '';
+                nuocContainer.innerHTML = '';
+
+                if (data.banhmi) {
+                    data.banhmi.forEach(item => {
+                        bmContainer.appendChild(createMenuButton(item.name, item.price));
+                    });
+                }
+                if (data.nuoc) {
+                    data.nuoc.forEach(item => {
+                        nuocContainer.appendChild(createMenuButton(item.name, item.price));
+                    });
+                }
             } catch (err) {
-                console.log("Dùng menu mặc định do chưa cấu hình trả menu từ Sheet:", err);
+                console.log("Lỗi tải menu từ Sheet, hiển thị menu mặc định", err);
                 renderDefaultMenu();
             }
         }
@@ -288,31 +292,20 @@
                 { name: "Bánh mì heo quay giòn bì", price: 30000 },
                 { name: "Bánh mì thịt xiên nướng", price: 30000 },
                 { name: "Bánh mì xá xíu nướng", price: 25000 },
-                { name: "Bánh mì gà ngũ vị", price: 25000 },
-                { name: "Bánh mì jambong mix xá xíu", price: 35000 },
                 { name: "Bánh mì pate trứng", price: 18000 }
             ];
-
             const nuocList = [
                 { name: "Trà trái cây", price: 25000 },
-                { name: "Trà sữa đậm vị truyền thống", price: 35000 },
-                { name: "Cà phê sữa", price: 20000 },
-                { name: "Bạc sỉu", price: 25000 }
+                { name: "Cà phê sữa", price: 20000 }
             ];
 
             const bmContainer = document.getElementById('banhmi-menu');
             const nuocContainer = document.getElementById('nuoc-menu');
-
             bmContainer.innerHTML = '';
             nuocContainer.innerHTML = '';
 
-            banhMiList.forEach(item => {
-                bmContainer.appendChild(createMenuButton(item.name, item.price));
-            });
-
-            nuocList.forEach(item => {
-                nuocContainer.appendChild(createMenuButton(item.name, item.price));
-            });
+            banhMiList.forEach(item => bmContainer.appendChild(createMenuButton(item.name, item.price)));
+            nuocList.forEach(item => nuocContainer.appendChild(createMenuButton(item.name, item.price)));
         }
 
         function createMenuButton(name, price) {
@@ -322,12 +315,9 @@
                 <div class="item-name">${name}</div>
                 <div class="item-price">${price.toLocaleString()}đ</div>
             `;
-            // Bấm trực tiếp vào nút là thêm vào giỏ hàng ngay
             btn.onclick = () => {
-                cart.push({ name, price, note: '' });
+                cart.push({ name, price });
                 updateCartUI();
-                
-                // Hiệu ứng nhẹ khi bấm
                 btn.style.borderColor = '#e65100';
                 setTimeout(() => btn.style.borderColor = '#ffe0b2', 200);
             };
@@ -345,7 +335,6 @@
                 alert('Vui lòng chọn ít nhất một món ăn!');
                 return;
             }
-
             let summaryHTML = '<b>Chi tiết giỏ hàng:</b><br>';
             cart.forEach((i, idx) => {
                 summaryHTML += `${idx + 1}. ${i.name} - ${i.price.toLocaleString()}đ<br>`;
@@ -360,4 +349,67 @@
 
         async function submitOrder() {
             const name = document.getElementById('cust-name').value.trim();
-            const phone = document.getElementById
+            const phone = document.getElementById('cust-phone').value.trim();
+            const note = document.getElementById('cust-note').value.trim();
+
+            if (!name || !phone) {
+                alert('Vui lòng điền đầy đủ Họ tên và Số điện thoại!');
+                return;
+            }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerText = 'Đang gửi...';
+
+            const totalAmount = cart.reduce((sum, i) => sum + i.price, 0);
+            const itemsDetail = cart.map(i => i.name).join('; ');
+            const orderId = 'WEB-' + Math.floor(1000 + Math.random() * 9000);
+            const nowStr = new Date().toLocaleString('vi-VN');
+
+            const payload = {
+                madon: orderId,
+                thoigian: nowStr,
+                khachhang: name,
+                sdt: phone,
+                chitietmon: itemsDetail,
+                tongtien: totalAmount,
+                ghichu: note
+            };
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const msg = `🚀 *ĐƠN HÀNG MỚI TỪ WEB* 🚀\n\n📌 Mã đơn: ${orderId}\n👤 Khách: ${name}\n📞 SĐT: ${phone}\n🛒 Món: ${itemsDetail}\n💰 Tổng tiền: ${totalAmount.toLocaleString()}đ\n📝 Ghi chú: ${note}`;
+                
+                fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'Markdown' })
+                });
+
+                alert('🎉 Đặt hàng thành công! Tiệm Bánh Mì NGUYÊN sẽ liên hệ xác nhận ngay.');
+                cart = [];
+                updateCartUI();
+                closeCheckoutModal();
+                document.getElementById('cust-name').value = '';
+                document.getElementById('cust-phone').value = '';
+                document.getElementById('cust-note').value = '';
+
+            } catch (err) {
+                alert('Lỗi kết nối khi gửi đơn, vui lòng gọi điện trực tiếp cho quán!');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'XÁC NHẬN ĐẶT';
+            }
+        }
+
+        window.onload = loadMenuFromSheet;
+    </script>
+</body>
+</html>
