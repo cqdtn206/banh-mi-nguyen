@@ -358,7 +358,7 @@
 
         async function loadMenuFromSheet() {
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const response = await fetch(GOOGLE_SCRIPT_URL + "?type=menu");
                 const data = await response.json();
                 globalMenuData = data;
                 
