@@ -275,7 +275,7 @@
             <div>
                 <h1>Tiệm Bánh Mì NGUYÊN</h1>
                 <p>372 Quang Trung, Thịnh Đán, Thái Nguyên</p>
-                <p>SĐT: 0973.818.199</p>
+                <p>SĐT: <a href="tel:0973818199" style="color: white; text-decoration: underline; font-weight: bold;">0973.818.199</a></p>
             </div>
         </div>
     </header>
@@ -290,7 +290,13 @@
             <span class="cart-count" id="cart-count">0 món trong giỏ</span>
             <span class="cart-total" id="cart-total">0đ</span>
         </div>
-        <button class="checkout-btn" onclick="openCheckoutModal()">Xem Giỏ Hàng & Đặt</button>
+        <div style="display: flex; gap: 8px;">
+            <!-- Nút gọi điện nhanh cho quán -->
+            <a href="tel:0973818199" style="background: #0277bd; color: white; text-decoration: none; padding: 10px 12px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;">
+                📞 Gọi Quán
+            </a>
+            <button class="checkout-btn" onclick="openCheckoutModal()">Xem Giỏ & Đặt</button>
+        </div>
     </div>
 
     <!-- Modal chọn Topping / Ghi chú cho từng món -->
