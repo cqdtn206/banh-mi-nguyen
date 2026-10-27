@@ -371,7 +371,7 @@
                 container.innerHTML = '';
 
                 // Chỉ hiển thị 3 danh mục chính ra màn hình đặt món
-                const mainCategories = ["BÁNH MÌ", "NƯỚC ÉP", "ĐỒ UỐNG"];
+                const mainCategories = ["Đồ ăn", "NƯỚC ÉP", "ĐỒ UỐNG"];
 
                 mainCategories.forEach(category => {
                     if (data[category] && data[category].length > 0) {
@@ -423,7 +423,7 @@
             chipsContainer.innerHTML = '';
 
             // Xác định lấy danh sách topping nào dựa theo danh mục sản phẩm chính
-            let targetToppingCat = (item.category === "BÁNH MÌ") ? "TOPPING BÁNH MÌ" : "TOPPING ĐỒ UỐNG";
+            let targetToppingCat = (item.category === "ĐỒ ĂN") ? "TOPPING BÁNH MÌ" : "TOPPING ĐỒ UỐNG";
             let activeToppings = globalMenuData[targetToppingCat] || [];
 
             // Lọc các topping đang bật (ON)
@@ -432,7 +432,7 @@
             const toppingSection = document.getElementById('topping-section');
             if (activeToppings.length > 0) {
                 toppingSection.style.display = 'block';
-                document.getElementById('topping-label').innerText = (item.category === "BÁNH MÌ") ? "Topping thêm cho bánh mì:" : "Topping thêm cho đồ uống:";
+                document.getElementById('topping-label').innerText = (item.category === "ĐỒ ĂN") ? "Topping thêm cho bánh mì:" : "Topping thêm cho đồ uống:";
 
                 activeToppings.forEach(top => {
                     const chip = document.createElement('div');
